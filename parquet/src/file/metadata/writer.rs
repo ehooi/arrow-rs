@@ -133,13 +133,13 @@ impl<'a, W: Write> ThriftMetadataWriter<'a, W> {
         // for all leaf nodes.
         // Even if the column has an undefined sort order, such as INTERVAL, this
         // is still technically the defined TYPEORDER so it should still be set.
-        let column_orders = (0..self.schema_descr.num_columns())
-            .map(|_| crate::format::ColumnOrder::TYPEORDER(crate::format::TypeDefinedOrder {}))
-            .collect();
-        // This field is optional, perhaps in cases where no min/max fields are set
-        // in any Statistics or ColumnIndex object in the whole file.
-        // But for simplicity we always set this field.
-        let column_orders = Some(column_orders);
+        // let column_orders = (0..self.schema_descr.num_columns())
+        //     .map(|_| crate::format::ColumnOrder::TYPEORDER(crate::format::TypeDefinedOrder {}))
+        //     .collect();
+        // // This field is optional, perhaps in cases where no min/max fields are set
+        // // in any Statistics or ColumnIndex object in the whole file.
+        // // But for simplicity we always set this field.
+        // let column_orders = Some(column_orders);
 
         let (row_groups, unencrypted_row_groups) = self
             .object_writer
@@ -152,7 +152,7 @@ impl<'a, W: Write> ThriftMetadataWriter<'a, W> {
             version: self.writer_version,
             schema: types::to_thrift(self.schema.as_ref())?,
             created_by: self.created_by.clone(),
-            column_orders,
+            column_orders: None,
             encryption_algorithm: self.object_writer.get_footer_encryption_algorithm(),
             footer_signing_key_metadata: None,
         };
