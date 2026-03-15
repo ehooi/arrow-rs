@@ -203,30 +203,6 @@ impl<'a, W: Write> ThriftMetadataWriter<'a, W> {
         let column_indexes = self.finalize_column_indexes()?;
         let offset_indexes = self.finalize_offset_indexes()?;
 
-        // We only include ColumnOrder for leaf nodes.
-        // Currently only supported ColumnOrder is TypeDefinedOrder so we set this
-        // for all leaf nodes.
-        // Even if the column has an undefined sort order, such as INTERVAL, this
-        // is still technically the defined TYPEORDER so it should still be set.
-        let column_orders = self
-            .schema_descr
-            .columns()
-            .iter()
-            .map(|col| {
-                let sort_order = ColumnOrder::sort_order_for_type(
-                    col.logical_type_ref(),
-                    col.converted_type(),
-                    col.physical_type(),
-                );
-                ColumnOrder::TYPE_DEFINED_ORDER(sort_order)
-            })
-            .collect();
-
-        // This field is optional, perhaps in cases where no min/max fields are set
-        // in any Statistics or ColumnIndex object in the whole file.
-        // But for simplicity we always set this field.
-        let column_orders = Some(column_orders);
-
         let (row_groups, unencrypted_row_groups) = self
             .object_writer
             .apply_row_group_encryption(self.row_groups)?;
@@ -253,7 +229,7 @@ impl<'a, W: Write> ThriftMetadataWriter<'a, W> {
             self.created_by,
             self.key_value_metadata,
             self.schema_descr.clone(),
-            column_orders,
+            None,
         );
 
         let file_meta = FileMeta {
